@@ -7,9 +7,13 @@ const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError.js");
 const session = require("express-session");
 const flash = require("connect-flash");
+const passport = require("passport");
+const LocalStrategy = require("passport-local");
+const User = require("./models/user.js");
 
-const listings = require("./routes/listingRoute.js");
-const reviews = require("./routes/reviewRoute.js");
+const listingRouter = require("./routes/listingRoute.js");
+const reviewRouter = require("./routes/reviewRoute.js");
+const userRouter = require("./routes/userRoute.js");
 
 const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 
@@ -49,30 +53,34 @@ const sessionOptions = {
 app.use(session(sessionOptions));
 app.use(flash());
 
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
 app.use((req, res, next) => {
     res.locals.success = req.flash("success");
     res.locals.error = req.flash("error");
     next();
 });
 
-app.use("/listings", listings);
-app.use("/listings/:id/reviews", reviews);
-
-
-
-// app.get("/testListing", async (req, res) => {
-//     let sampleListing = new Listing({
-//         title: "My New Villa",
-//         description: "By the beach",
-//         price: 1200,
-//         location: "Calangute, Goa",
-//         country: "India",
+// app.get("/demouser", async (req, res) => {
+//     let fakeUser = new User({
+//         email: "student@gmail.com",
+//         username: "delta-student"
 //     });
 
-//     await sampleListing.save();
-//     console.log("sample was saved");
-//     res.send("successful testing");
+//     let registeredUser = await User.register(fakeUser, "helloworld");
+//     res.send(registeredUser);
 // });
+
+app.use("/listings", listingRouter);
+app.use("/listings/:id/reviews", reviewRouter);
+app.use("/", userRouter);
+
+
 
 app.use((req, res, next) => {
     next(new ExpressError(404, "Page Not Found!"));
