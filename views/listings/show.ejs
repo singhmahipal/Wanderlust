@@ -1,4 +1,13 @@
 <% layout("/layouts/boilerplate") %>
+
+<!-- Include MapLibre GL JS -->
+<link href="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css" rel="stylesheet" />
+
+<script>
+    // Pass listing data to JavaScript (no need for mapToken anymore)
+    const listing = <%- JSON.stringify(listing) %>;
+</script>
+
 <div class="row mt-3">
     <!-- Title -->
     <div class="col-8 offset-3">
@@ -19,21 +28,21 @@
 </div>
 
 <!-- Buttons Row -->
-    <% if (currUser && currUser._id.equals(listing.owner._id)) { %>
-        <div class="btns mb-3">
-            <!--Edit button-->
-            <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark col-1 offset-3 edit-btn">Edit</a>
-            
-            <!--Delete button-->
-            <form method="post" action="/listings/<%= listing._id %>?_method=DELETE"> 
-                <button class="btn btn-dark offset-5">Delete</button> 
-            </form> 
-        </div>
-    <% } %>           
-    <div class="col-8 offset-3 mb-3">
+<% if (currUser && currUser._id.equals(listing.owner._id)) { %>
+    <div class="btns mb-3">
+        <!--Edit button-->
+        <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark col-1 offset-3 edit-btn">Edit</a>
+        
+        <!--Delete button-->
+        <form method="post" action="/listings/<%= listing._id %>?_method=DELETE"> 
+            <button class="btn btn-dark offset-5">Delete</button> 
+        </form> 
+    </div>
+<% } %>           
+
+<div class="col-8 offset-3 mb-3">
     <hr>
     <% if (currUser) { %>      
-        
         <h4>Leave a Review:</h4>
         <form action="/listings/<%= listing._id %>/reviews" method="post" class="needs-validation" novalidate>            
             <div class="mb-3 mt-3">
@@ -56,7 +65,6 @@
                     <input type="radio" id="rating-5" name="review[rating]" value="5" />
                     <label for="rating-5" title="Amazing">5 stars</label>
                 </fieldset>
-
             </div>
             <div class="mb-3 mt-3">
                 <label for="comment" class="form-label">Comment</label>
@@ -67,24 +75,34 @@
         </form>
         <hr> 
     <% } %>  
-    
-        
-<!-- Reviews -->        
-        <p><b>All Reviews:</b></p>
-        <div class="row">
+
+    <!-- Reviews -->
+    <% if (listing.reviews.length > 0) { %>
+       <p><b>All Reviews:</b></p>
+       <div class="row">
             <% for (review of listing.reviews) { %>
                 <div class="card col-5 mb-3 ms-3">
                     <div class="card-body">
                         <div class="card-title">@<%= review.author.username %></div>
                         <p class="starability-result card-text" data-rating="<%= review.rating %>"></p>
                         <div class="card-text"> <%= review.comment %> </div>
-                        <form method="post" action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE" class="mb-3">
-                            <button class="btn btn-sm btn-dark">Delete</button>
-                        </form>
+                        <% if (currUser && currUser._id.equals(review.author._id)) { %>
+                            <form method="post" action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE" class="mb-3">
+                                <button class="btn btn-sm btn-dark">Delete</button>
+                            </form>
+                        <% } %>
                     </div>
                 </div>
-                
             <% } %>
-        </div>
-    </div>
+        </div> 
+    <% } %>        
 </div>
+
+<!-- Map Section -->
+<div class="col-8 offset-3 mb-3">
+    <h3>Where you'll be</h3>
+    <div id="map" style="height: 300px; border: 1px solid #ddd; border-radius: 5px;"></div>
+</div>
+
+<!-- Include map script only if we have the map container -->
+<script src="/js/map.js"></script>
