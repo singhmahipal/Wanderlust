@@ -20,8 +20,6 @@ const listingRouter = require("./routes/listingRoute.js");
 const reviewRouter = require("./routes/reviewRoute.js");
 const userRouter = require("./routes/userRoute.js");
 
-// const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
-
 const dbUrl = process.env.ATLASDB_URL;
 
 main()
@@ -50,14 +48,14 @@ app.get("/", (req, res) => {
 const store = MongoStore.create({
     mongoUrl: dbUrl,
     crypto: {
-        secret: "mysupersecretcode"
+        secret: process.env.SECRET
     },
     touchAfter: 24*3600
 });
 
 const sessionOptions = {
     store,
-    secret: "mysupersecretcode",
+    secret: process.env.SECRET,
     resave: false,
     saveUninitialized: true,
     cookie: {
