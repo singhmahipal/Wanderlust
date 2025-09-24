@@ -10,6 +10,7 @@ const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError.js");
 const session = require("express-session");
+const MongoStore = require('connect-mongo');
 const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
@@ -19,7 +20,9 @@ const listingRouter = require("./routes/listingRoute.js");
 const reviewRouter = require("./routes/reviewRoute.js");
 const userRouter = require("./routes/userRoute.js");
 
-const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
+// const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
+
+const dbUrl = process.env.ATLASDB_URL;
 
 main()
     .then(() => {
@@ -30,7 +33,7 @@ main()
     });
 
 async function main() {
-    await mongoose.connect(MONGO_URL);
+    await mongoose.connect(dbUrl);
 }
 
 app.set("view engine", "ejs");
@@ -39,11 +42,21 @@ app.use(express.urlencoded({extended: true}));
 app.use(methodOverride("_method"));
 app.engine('ejs', ejsMate);
 app.use(express.static(path.join(__dirname, "/public")));
+
 app.get("/", (req, res) => {
-    res.send("hi i am root");
+    res.redirect("/listings");
+});
+
+const store = MongoStore.create({
+    mongoUrl: dbUrl,
+    crypto: {
+        secret: "mysupersecretcode"
+    },
+    touchAfter: 24*3600
 });
 
 const sessionOptions = {
+    store,
     secret: "mysupersecretcode",
     resave: false,
     saveUninitialized: true,
@@ -53,6 +66,10 @@ const sessionOptions = {
         httpOnly: true
     }
 };
+
+store.on("error", () => {
+    console.log("ERROR in MONGO SESSION STORE", err)
+});
 
 app.use(session(sessionOptions));
 app.use(flash());
@@ -69,6 +86,14 @@ app.use((req, res, next) => {
     res.locals.error = req.flash("error");
     res.locals.currUser = req.user;
     next();
+});
+
+app.get("/privacy", (req, res) => {
+    res.render("listings/privacy");
+});
+
+app.get("/termsandconditions", (req, res) => {
+    res.render("listings/termsandcondition.ejs");
 });
 
 // app.get("/demouser", async (req, res) => {

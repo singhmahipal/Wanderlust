@@ -1,23 +1,65 @@
-<nav class="navbar navbar-expand-md bg-body-light border-bottom sticky-top">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="/"><i class="fa-regular fa-compass"></i></a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup">
+<nav class="navbar navbar-expand-md bg-white border-bottom sticky-top shadow-sm">
+  <div class="container-fluid px-3">
+    <!-- Brand -->
+    <a class="navbar-brand fw-bold text-danger fs-4" href="/">
+      <i class="fa-regular fa-compass me-2"></i>Wanderlust
+    </a>
+    
+    <!-- Mobile toggle -->
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
+    
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-      <div class="navbar-nav">
-        <a class="nav-link" href="/">Home</a>
-        <a class="nav-link" href="/listings">All Listings</a>
-        <a class="nav-link" href="/listings/new">Add New Listing</a>
+      <!-- Left Navigation -->
+      <div class="navbar-nav me-3">
+        <a class="nav-link fw-medium" href="/listings">Explore</a>
       </div>
-      <div class="navbar-nav ms-auto">
-        <% if (currUser) { %>
-          <a class="nav-link" href="/logout">Log Out</a>
+      
+      <!-- Center Search Bar -->
+      <div class="flex-grow-1 d-flex justify-content-center">
+        <div class="search-wrapper position-relative">
+          <form class="search-form" role="search" action="/listings" method="GET">
+            <div class="search-input-group">
+              <input 
+                class="form-control search-input" 
+                type="search" 
+                name="search"
+                value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>"
+                placeholder="Search destinations, places, categories..." 
+                aria-label="Search"
+                autocomplete="off"
+                id="searchInput"
+              />
+              <button class="search-btn" type="submit">
+                <i class="fa-solid fa-magnifying-glass"></i>
+              </button>
+            </div>
+            
+            <!-- Search Suggestions -->
+            <div class="search-suggestions" id="searchSuggestions">
+              <!-- Suggestions populated by JavaScript -->
+            </div>
+            
+            <!-- Preserve category filter -->
+            <% if (typeof category !== 'undefined' && category) { %>
+              <input type="hidden" name="category" value="<%= category %>">
+            <% } %>
+          </form>
+        </div>
+      </div>
+      
+      <!-- Right Navigation -->
+      <div class="navbar-nav ms-3">
+        <a class="nav-link fw-medium" href="/listings/new">
+          <i class="fa-solid fa-plus me-1"></i>Add Listing
+        </a>
+        <% if (typeof currUser !== 'undefined' && currUser) { %>
+          <a class="nav-link fw-medium text-danger" href="/logout">Log Out</a>
+        <% } else { %>
+          <a class="nav-link fw-medium" href="/signup">Sign Up</a>
+          <a class="nav-link fw-medium btn btn-outline-danger btn-sm ms-2 px-3" href="/login">Log In</a>
         <% } %>
-        <% if (!currUser) { %>
-          <a class="nav-link" href="/signup">Sign Up</a>
-          <a class="nav-link" href="/login">Log In</a>
-        <% } %>                
       </div>
     </div>
   </div>

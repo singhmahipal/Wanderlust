@@ -1,23 +1,131 @@
-<% layout("/layouts/boilerplate") %>
-<body>    
-    <h1>All Listings</h1>
-    <!-- <form action="/listings/new" method="get">
-        <button>Create New Listing</button>
-    </form> -->
-    <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1">
-        <% for (let listing of allListings) { %>
-            <a href="/listings/<%= listing._id %>" class="listing-link">
-                <div class="card col listing-card">
-                    <div class="card-img-overlay"></div>
-                    <img src="<%= listing.image.url %>" class="card-img-top" style="height: 20rem;" alt="listing image">
-                    <div class="card-body">
-                        <p class="card-text">
-                            <b><%= listing.title %></b> <br>
-                            &#8377; <%= listing.price.toLocaleString("en-IN") %>/night
-                        </p>
+<%= layout("/layouts/boilerplate") %>
+
+<body>
+    <!-- Search Results Header -->
+    <% if (typeof searchPerformed !== 'undefined' && searchPerformed) { %>
+        <div class="search-results-header mt-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="search-results-title">
+                        Search Results for "<%= searchQuery %>"
+                    </div>
+                    <div class="search-results-count">
+                        <%= searchResultsCount %> <%= searchResultsCount === 1 ? 'property' : 'properties' %> found
+                        <% if (typeof category !== 'undefined' && category) { %>
+                            in <%= category %>
+                        <% } %>
                     </div>
                 </div>
+                <a href="/listings<%= typeof category !== 'undefined' && category ? '?category=' + encodeURIComponent(category) : '' %>" class="clear-search-btn">
+                    <i class="fa-solid fa-xmark me-1"></i>Clear Search
+                </a>
+            </div>
+        </div>
+    <% } %>
+
+    <!-- Category Filters -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div id="filters" class="d-flex flex-nowrap overflow-auto mt-3 gap-3 align-items-center">
+            <a href="/listings<%= typeof searchQuery !== 'undefined' && searchQuery ? '?search=' + encodeURIComponent(searchQuery) : '' %>" 
+               class="filter <%= !category ? 'active' : '' %>">
+                <div><i class="fa-solid fa-house"></i></div>
+                <p>All</p>
             </a>
-    <%} %>
+            <a href="/listings?category=Trending<%= typeof searchQuery !== 'undefined' && searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %>" 
+               class="filter <%= category === 'Trending' ? 'active' : '' %>">
+                <div><i class="fa-solid fa-fire"></i></div>
+                <p>Trending</p>
+            </a>
+            <a href="/listings?category=Beds<%= typeof searchQuery !== 'undefined' && searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %>" 
+               class="filter <%= category === 'Beds' ? 'active' : '' %>">
+                <div><i class="fa-solid fa-bed"></i></div>
+                <p>Beds</p>
+            </a>
+            <a href="/listings?category=Iconic Cities<%= typeof searchQuery !== 'undefined' && searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %>" 
+               class="filter <%= category === 'Iconic Cities' ? 'active' : '' %>">
+                <div><i class="fa-solid fa-mountain-city"></i></div>
+                <p>Iconic Cities</p>
+            </a>
+            <a href="/listings?category=Mountains<%= typeof searchQuery !== 'undefined' && searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %>" 
+               class="filter <%= category === 'Mountains' ? 'active' : '' %>">
+                <div><i class="fa-solid fa-mountain"></i></div>
+                <p>Mountains</p>
+            </a>
+            <a href="/listings?category=Castles<%= typeof searchQuery !== 'undefined' && searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %>" 
+               class="filter <%= category === 'Castles' ? 'active' : '' %>">
+                <div><i class="fa-brands fa-fort-awesome"></i></div>
+                <p>Castles</p>
+            </a>
+            <a href="/listings?category=Amazing Pools<%= typeof searchQuery !== 'undefined' && searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %>" 
+               class="filter <%= category === 'Amazing Pools' ? 'active' : '' %>">
+                <div><i class="fa-solid fa-person-swimming"></i></div>
+                <p>Amazing Pools</p>
+            </a>
+            <a href="/listings?category=Camping<%= typeof searchQuery !== 'undefined' && searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %>" 
+               class="filter <%= category === 'Camping' ? 'active' : '' %>">
+                <div><i class="fa-solid fa-campground"></i></div>
+                <p>Camping</p>
+            </a>
+            <a href="/listings?category=Farm<%= typeof searchQuery !== 'undefined' && searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %>" 
+               class="filter <%= category === 'Farm' ? 'active' : '' %>">
+                <div><i class="fa-solid fa-cow"></i></div>
+                <p>Farm</p>
+            </a>
+            <a href="/listings?category=Arctic<%= typeof searchQuery !== 'undefined' && searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %>" 
+               class="filter <%= category === 'Arctic' ? 'active' : '' %>">
+                <div><i class="fa-solid fa-snowflake"></i></div>
+                <p>Arctic</p>
+            </a>
+            <a href="/listings?category=Beachfront<%= typeof searchQuery !== 'undefined' && searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %>" 
+               class="filter <%= category === 'Beachfront' ? 'active' : '' %>">
+                <div><i class="fa-solid fa-umbrella-beach"></i></div>
+                <p>Beachfront</p>
+            </a>
+        </div>
+        <div class="ps-3 tax-toggle">
+            <div class="form-check-reverse form-switch mb-0">
+                <input class="form-check-input" type="checkbox" role="switch" id="switchCheckDefault">
+                <label class="form-check-label" for="switchCheckDefault">Taxes</label>
+            </div>
+        </div>
     </div>
+
+    <!-- Listings Grid or No Results -->
+    <% if (allListings.length === 0) { %>
+        <div class="no-results">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <h4>No properties found</h4>
+            <% if (typeof searchPerformed !== 'undefined' && searchPerformed) { %>
+                <p>Try adjusting your search terms or <a href="/listings" class="clear-search-btn">browse all properties</a></p>
+            <% } else { %>
+                <p>No properties available at the moment.</p>
+            <% } %>
+        </div>
+    <% } else { %>
+        <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1">
+            <% for (let listing of allListings) { %>
+                <a href="/listings/<%= listing._id %>" class="listing-link text-decoration-none">
+                    <div class="card col listing-card">
+                        <div class="card-img-overlay"></div>
+                        <img src="<%= listing.image.url %>" class="card-img-top" style="height: 20rem;" alt="listing image">
+                        <div class="card-body">
+                            <p class="card-text mb-0">
+                                <b><%= listing.title %></b> <br>
+                                &#8377; <%= listing.price.toLocaleString("en-IN") %>/night
+                                &nbsp; <i class="tax-info">+18% GST</i>
+                                <% if (listing.category) { %>
+                                    <br><small class="text-muted"><%= listing.category %></small>
+                                <% } %>
+                                <% if (listing.location && listing.country) { %>
+                                    <br><small class="text-muted">
+                                        <i class="fa-solid fa-location-dot me-1"></i><%= listing.location %>, <%= listing.country %>
+                                    </small>
+                                <% } %>
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            <% } %>
+        </div>
+    <% } %>
 </body>
